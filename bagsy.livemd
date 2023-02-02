@@ -1,0 +1,56 @@
+# Bagsy
+
+```elixir
+my_app_root = Path.join(__DIR__, ".")
+
+Mix.install(
+  [
+    {:bagsy, path: my_app_root, env: :dev},
+    {:kino, "~> 0.7"}
+  ],
+  # config_path: Path.join(my_app_root, "config/config.exs"),
+  lockfile: Path.join(my_app_root, "mix.lock")
+)
+```
+
+## Section
+
+```elixir
+file = "/path/to/bag.db3"
+conn = Bagsy.Conn.new(file)
+```
+
+```elixir
+bag = Bagsy.Bag.new(conn)
+```
+
+```elixir
+{:ok, statement} =
+  Exqlite.Sqlite3.prepare(conn.db, "SELECT topic_id, data FROM messages WHERE id == 84")
+
+{:row, [topic_id, data]} = Exqlite.Sqlite3.step(conn.db, statement)
+
+parser = Bagsy.Parser.new(bag.topics)
+{:ok, img} = Bagsy.Parser.parse_message(parser, topic_id, data)
+```
+
+```elixir
+mat = img.data |> Nx.to_binary() |> Evision.imdecode(Evision.cv_IMREAD_GRAYSCALE())
+```
+
+```elixir
+{2, [y, x]} = Evision.Mat.size(mat)
+y = trunc(y / 5)
+x = trunc(x / 5)
+Evision.resize(mat, {_width = x, _height = y})
+```
+
+```elixir
+{:ok, statement} =
+  Exqlite.Sqlite3.prepare(conn.db, "SELECT topic_id, data FROM messages WHERE id == 60")
+
+{:row, [topic_id, data]} = Exqlite.Sqlite3.step(conn.db, statement)
+
+parser = Bagsy.Parser.new(bag.topics)
+{:ok, speed} = Bagsy.Parser.parse_message(parser, topic_id, data)
+```
